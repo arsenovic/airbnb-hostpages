@@ -53,7 +53,7 @@ def create_sites(output_path, template='nuetral'):
 
 
 
-    #shutil.rmtree(static_sites)
+    shutil.rmtree(static_sites)
     # For each user, create a site
     for userid in df['userid'].unique():
         df_user = df[df['userid']==userid]
@@ -139,9 +139,8 @@ def create_sites(output_path, template='nuetral'):
             write_jekyl_frontmatter(listings_yamls[k], filename)
         
         source = paths['root']
-        dest = path.join(static_sites,userid )
+        dest = path.join(static_sites,user )
         os.system('jekyll build -s \"%s\" -d \"%s\"'%(source, dest))
-        print ('jekyll build -s \"%s\" -d \"%s\"'%(source, dest))
     
     
 def scrape_and_create_sites(output_path=None,template='nuetral'):
