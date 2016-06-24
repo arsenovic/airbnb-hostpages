@@ -40,9 +40,9 @@ class ListingSpider(scrapy.Spider):
             item['listing_img']= listing.xpath('.//div[@class="listing-img-container media-cover text-center"]/img/@src').extract_first().replace('https','http').replace('x_medium','x_large')
             yield item
 
+        paginate = True
         next_page = response.xpath('//a[@rel="next"]/@href')
-        next_page=1
-        if next_page:
+        if paginate:
             url = response.urljoin(next_page.extract_first())
             yield scrapy.Request(url, self.parse)
 

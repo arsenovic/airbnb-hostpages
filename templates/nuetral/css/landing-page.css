@@ -38,9 +38,12 @@ h6 {
     padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
     padding-bottom: 20px;
     text-align: center;
-    /*color: #ffffff; /*#f8f8f8;
-    /*background: url(../img/intro-bg.jpg) no-repeat center center;
+    /*color: #ffffff; /*#f8f8f8;*/
+    /*background: url(../img/intro-bg.jpg) no-repeat center center;*
+    url({{ site.posts.first.img }});
     background-size: cover;
+
+    background: linear-gradient(rgba(0, 0, 0, 0.7),rgba(0, 0, 0, 0.7));
     */
 }
 

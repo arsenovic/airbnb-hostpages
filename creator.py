@@ -24,9 +24,19 @@ def try_to_mkdir(d):
         pass
     
 
+def items_df(output_path=None):
+    module_path = path.dirname(path.abspath(__file__))+'/'
+    if output_path is None:
+        output_path=module_path
+    scraped_csv = path.join(output_path,'items.csv')
+    df = pd.read_csv(scraped_csv)
+    #df['count']=df.groupby(['userid'])['name'].transform(len)
+    #df = df.sort('count', ascending=False)
+    #df = df[df['count']>2]
+    return df
 
 
-def create_sites(output_path, template='nuetral'):
+def create_sites(output_path, template='nuetral', n_listings_thres=3):
     module_path = path.dirname(path.abspath(__file__))+'/'
     
     if output_path is None:
@@ -45,18 +55,24 @@ def create_sites(output_path, template='nuetral'):
                      'index':'index.html'}
 
     ## use pandas to count #listings and sort 
-    print(scraped_csv)
+    #print(scraped_csv)
     df = pd.read_csv(scraped_csv)
-    df['count']=df.groupby(['userid'])['name'].transform(len)
-    df = df.sort('count', ascending=False)
-    df = df[df['count']>2]
+    #df['count']=df.groupby(['userid'])['name'].transform(len)
+    #df = df.sort('count', ascending=False)
+    #df = df[df['count']>2]
 
 
-
-    shutil.rmtree(static_sites)
+    try:
+        shutil.rmtree(static_sites)
+    except:
+        pass
+        
     # For each user, create a site
     for userid in df['userid'].unique():
         df_user = df[df['userid']==userid]
+        if len(df_user) < n_listings_thres:
+            continue
+            
         
         ## site values
         user = df_user['user'].values[0]
