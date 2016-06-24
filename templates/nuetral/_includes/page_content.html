@@ -3,7 +3,7 @@
 {% for post in site.posts reversed %}
   {% capture thecycle %}{% cycle 'odd', 'even' %}{% endcapture %}
     {% if thecycle == 'odd' %}
-    <div class="content-section-a">
+    <div class="content-section-a" id ="{{ post.listing_id }}">
 
         <div class="container">
 
@@ -33,7 +33,7 @@
     <!-- /.content-section-a -->
     {% else %}
 
-    <div class="content-section-b">
+    <div class="content-section-b"  id ="{{ post.listing_id }}">
 
         <div class="container">
 

@@ -90,8 +90,8 @@ def create_sites(output_path, template='nuetral', n_listings_thres=3):
         yamls['site_config'] = \
             {'author': user,
              'copyright': 'Copyright &copy; 2016 %s. All Rights Reserved.'%user,
-             'description': 'You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.\n',
-             'email': 'your-email@domain.com',
+             'description': 'This will appear in your document head meta (for Google search results) and in your feed.xml site description.\n',
+            
              'markdown': 'kramdown',
              'permalink': 'pretty',
              'title': '%s\'s Listings'%user,
@@ -107,9 +107,9 @@ def create_sites(output_path, template='nuetral', n_listings_thres=3):
         yamls['index'] = \
             {'layout': 'default',
               'user':user,
-              'title':  '%s\'s Listings'%user,
               'about_host':about_host,
-              'subTitle':'A subtitle to describe this place.',
+              'title':  '%s\'s Listings'%user,
+              'subTitle':'Catchy subtitle to describe this place.',
               'user_img':user_img, 
               'bug':[-1]
                      }
