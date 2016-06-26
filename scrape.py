@@ -37,7 +37,7 @@ class ListingSpider(scrapy.Spider):
             
             item['user_img'] = listing.xpath('.//div[@class="media-photo media-round"]/img/@src').extract_first().replace('medium','x_medium')
             item['user'] = listing.xpath('.//div[@class="media-photo media-round"]/img/@alt').extract_first().split(' from')[0]
-            item['listing_img']= listing.xpath('.//div[@class="listing-img-container media-cover text-center"]/img/@src').extract_first().replace('https','http').replace('x_medium','x_large')
+            item['listing_img']= listing.xpath('.//div[@class="listing-img-container media-cover text-center"]/img/@src').extract_first().replace('https','https').replace('x_medium','x_large')
             yield item
 
         paginate = True

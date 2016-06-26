@@ -5,6 +5,8 @@ import pandas as pd
 import yaml
 from distutils import dir_util
 import shutil
+import git
+import github
 
 
 from scrape import scrape_it
@@ -24,55 +26,53 @@ def try_to_mkdir(d):
         pass
     
 
-def items_df(output_path=None):
-    module_path = path.dirname(path.abspath(__file__))+'/'
-    if output_path is None:
-        output_path=module_path
-    scraped_csv = path.join(output_path,'items.csv')
-    df = pd.read_csv(scraped_csv)
-    #df['count']=df.groupby(['userid'])['name'].transform(len)
-    #df = df.sort('count', ascending=False)
-    #df = df[df['count']>2]
-    return df
 
 
-def create_sites(output_path, template='nuetral', n_listings_thres=3):
-    module_path = path.dirname(path.abspath(__file__))+'/'
+class BigHost(object):
+    def __init__(self, output_path='/tmp/', template='nuetral'):
+        self.output_path=output_path
     
-    if output_path is None:
-        output_path=module_path
+        self.module_path = path.dirname(path.abspath(__file__))+'/'
+        self.template = 'nuetral'
+        self.scraped_csv = path.join(output_path,'items.csv')
+
+        self.jekylls = path.join(output_path, '_jekylls')
+        self.sites = path.join(output_path, '_sites')
+        self.template_path = path.join(self.module_path,'templates/', template)
+
+        # paths relative to each hosts's sub-site
+        self.relative_paths = {'root':'',
+                              'posts':'_posts',
+                             'site_config':'_config.yml',
+                             'index':'index.html'}
     
-    # site-wide paths
-    scraped_csv = path.join(output_path,'items.csv')
-    jekylls = path.join(output_path, '_jekylls')
-    static_sites = path.join(output_path, '_sites')
-    template_path = path.join(module_path,'templates/', template)
+    def remove_output(self):
+        try:
+            shutil.rmtree(self.sites)
+            shutil.rmtree(self.jekylls)
+        except:
+            pass
+    
+    @property
+    def df(self):
+        return  pd.read_csv(self.scraped_csv)
 
-    # paths relative to each hosts's sub-site
-    relative_paths = {'root':'',
-                      'posts':'_posts',
-                     'site_config':'_config.yml',
-                     'index':'index.html'}
-
-    ## use pandas to count #listings and sort 
-    #print(scraped_csv)
-    df = pd.read_csv(scraped_csv)
-    #df['count']=df.groupby(['userid'])['name'].transform(len)
-    #df = df.sort('count', ascending=False)
-    #df = df[df['count']>2]
-
-
-    try:
-        shutil.rmtree(static_sites)
-    except:
-        pass
+    def first_userid(self, big=True):
+        df = self.df
+        if big:
+            for userid in df['userid'].unique():
+                if  len(df[df['userid']==userid]) > 3:
+                    return userid
         
-    # For each user, create a site
-    for userid in df['userid'].unique():
+        return df['userid'].values[0]
+        
+        
+    
+    
+    def create_site(self, userid):    
+        df = self.df
         df_user = df[df['userid']==userid]
-        if len(df_user) < n_listings_thres:
-            continue
-            
+       
         
         ## site values
         user = df_user['user'].values[0]
@@ -80,8 +80,8 @@ def create_sites(output_path, template='nuetral', n_listings_thres=3):
         
         # TODO: values to be gotten
         email = 'me@my.com'
-        twitter = ''
-        facebook = ''
+        twitter = 'twitterid'
+        facebook = 'facebookid'
         about_host = 'This is a host-submitted description of their listings. What do they do, how long have they operated, what additional services they provide, etc.   pulling from a host\'s  bio would make a sensible default, or perhaps we just blow this away. '
         
         yamls = {}
@@ -113,7 +113,7 @@ def create_sites(output_path, template='nuetral', n_listings_thres=3):
               'user_img':user_img, 
               'bug':[-1]
                      }
- 
+
         
         listings_yamls = {}
         for lid,img,name, summary in df_user[['listingid','listing_img','name','summary']].values:
@@ -129,20 +129,14 @@ def create_sites(output_path, template='nuetral', n_listings_thres=3):
             
         ## write junk  
         # localize paths to this userid
-        paths = {k:path.join(jekylls, str(userid), relative_paths[k]) for k in relative_paths}
-        print paths['root']
-        # remove existing site
-        if 0:
-            try:
-                shutil.rmtree(paths['root'])
-            except(OSError):
-                pass
+        paths = {k:path.join(self.jekylls, str(userid), self.relative_paths[k]) for k in self.relative_paths}
+        print 'generated %s'%paths['root']
         
         # make paths if they dont exist
         [try_to_mkdir(paths[k]) for k in ['root','posts']]
             
         # copy template
-        dir_util.copy_tree(template_path, paths['root'])
+        dir_util.copy_tree(self.template_path, paths['root'])
         
         # write jekyl files
         with open(paths['site_config'],'wb') as yamlfile:
@@ -154,17 +148,45 @@ def create_sites(output_path, template='nuetral', n_listings_thres=3):
             filename = path.join(paths['posts'],'2016-01-01-listing-'+str(k)+'.markdown')
             write_jekyl_frontmatter(listings_yamls[k], filename)
         
-        source = paths['root']
-        dest = path.join(static_sites,user )
+        
+    
+    
+    
+    def build_site(self,userid):
+        userid=str(userid)
+        source = path.join(self.jekylls, userid)
+        dest = path.join(self.sites,userid )
         os.system('jekyll build -s \"%s\" -d \"%s\"'%(source, dest))
+        print('built %s'%dest)
+        
+    def deplay_to_git(self,userid,  token):
+        gh=github.Github(token)
+        user = gh.get_user()
+        
+        try: 
+            gh_repo = user.get_repo()
+        except:
+            gh_repo = user.create_repo(name='userid', private=True)
+        
+               
+        jekyll_path= path.join(self.jekylls, userid)
+        local_repo = git.Repo.init(jekyll_path)
+        local_repo.git.checkout('-b' ,'gh-pages')
+        local_repo.git.add('*')
+        local_repo.git.commit('-m','inital commit')
+        origin = local_repo.create_remote('origin',gh_repo.ssh_url)
+        local_repo.git.push('--set-upstream','origin','gh-pages')
     
-    
-def scrape_and_create_sites(output_path=None,template='nuetral'):
-    module_path = path.dirname(path.abspath(__file__))+'/'
-    if output_path is None:
-        output_path=module_path
-    print module_path
+    def create_sites_for_bighosts(self,  listings_thres=3):
+        df = self.df
+        # For each bighost
+        for userid in df['userid'].unique():
+            if  len(df[df['userid']]) > listings_thres:
+                self.create_site(userid=userid)    
+        
+'''
+def scrape_and_create_sites(output_path='/tmp/',template='nuetral'):
     scrape_it(output_path=output_path)
     create_sites(output_path=output_path, template=template)
-    
+'''
     
