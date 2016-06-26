@@ -160,13 +160,16 @@ class BigHost(object):
         print('built %s'%dest)
         
     def deplay_to_git(self,userid,  token):
+        userid=str(userid)
         gh=github.Github(token)
         user = gh.get_user()
         
         try: 
-            gh_repo = user.get_repo()
+            gh_repo = user.get_repo(userid)
+            gh_repo.delete()
         except:
-            gh_repo = user.create_repo(name='userid', private=True)
+            pass
+        gh_repo = user.create_repo(name=userid, private=True)
         
                
         jekyll_path= path.join(self.jekylls, userid)
@@ -176,6 +179,7 @@ class BigHost(object):
         local_repo.git.commit('-m','inital commit')
         origin = local_repo.create_remote('origin',gh_repo.ssh_url)
         local_repo.git.push('--set-upstream','origin','gh-pages')
+        print ('http://%s.github.io/%s'%(user.login,userid))
     
     def create_sites_for_bighosts(self,  listings_thres=3):
         df = self.df
