@@ -45,11 +45,14 @@ class BigHost(object):
                               'posts':'_posts',
                              'site_config':'_config.yml',
                              'index':'index.html'}
+        
+        [try_to_mkdir(k) for k in self.jekylls, self.sites]
     
     def remove_output(self):
         try:
             shutil.rmtree(self.sites)
             shutil.rmtree(self.jekylls)
+            [try_to_mkdir(k) for k in self.jekylls, self.sites]
         except:
             pass
     
@@ -171,10 +174,13 @@ class BigHost(object):
             pass
         gh_repo = user.create_repo(name=userid, private=True)
         
-               
+        
         jekyll_path= path.join(self.jekylls, userid)
         local_repo = git.Repo.init(jekyll_path)
-        local_repo.git.checkout('-b' ,'gh-pages')
+        try:
+            local_repo.git.checkout('-b' ,'gh-pages')
+        except:
+            local_repo.git.checkout('gh-pages')
         local_repo.git.add('*')
         local_repo.git.commit('-m','inital commit')
         origin = local_repo.create_remote('origin',gh_repo.ssh_url)
