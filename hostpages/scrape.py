@@ -4,7 +4,11 @@ from scrapy.settings import Settings
 from scrapy.utils.log import configure_logging
 from os import path
 
+import logging 
 class Listing(scrapy.Item):
+    '''
+    Scrapy database-like object to fill  with values
+    '''
     userid = scrapy.Field()
     user = scrapy.Field()
     listingid = scrapy.Field()
@@ -16,13 +20,23 @@ class Listing(scrapy.Item):
 
 
 class ListingSpider(scrapy.Spider):
+    '''
+    Crawls search pages and extract listings objects
+    
+    initialize with the `start_urls` pointing to to a airbnb 
+    search result page[s]. 
+    
+    Examples
+    --------------
+    start_urls=['http://airbnb.com/s?host_id=41657617']
+    l = ListingSpider(start_urls = start_urls)
+    '''
     name = "listing"
     allowed_domains = ["airbnb.com"]
-    start_urls = [
-        'http://www.airbnb.com/s/Stanardsville--VA--United-States?page=1'
-    ]
+    start_urls = ['http://airbnb.com/s?host_id=41657617']
 
     def parse(self, response):
+        logging.getLogger('scrapy').setLevel(logging.CRITICAL)
         listings = response.xpath('//div[@class="listing"]')
         for listing in listings:
             item = Listing()
@@ -54,7 +68,6 @@ def scrape_it(output_path):
     # TODO fix cantrestartreactor problem
     settings = Settings(dict(FEED_FORMAT='csv',
                             FEED_URI=csv_filename,
-                            
                             ))
 
 
