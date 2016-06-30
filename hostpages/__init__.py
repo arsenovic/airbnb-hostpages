@@ -5,9 +5,12 @@ import pandas as pd
 import yaml
 from distutils import dir_util
 import shutil
-import git
-import github
 
+try:
+    import git
+    import github
+except:
+    pass
 
 import scrapy
 from scrapy.crawler import CrawlerProcess
@@ -42,7 +45,8 @@ def try_to_mkdir(d):
     
 class HostPageMaker(object):
     '''
-    Makes a jekyll website for a airbnb Host, and deploy to git 
+    Makes a jekyll website for a air
+    bnb Host, and deploy to git 
     
     Parameters
     --------------

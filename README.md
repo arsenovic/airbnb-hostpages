@@ -1,5 +1,8 @@
 # hostpages 
-generates a jekyll page for all an airbnb host's listings and optionally deploy it on github through github pages
+
+this is a tool for  hosts who have multiple listings, and want a website
+
+hostpages generates a jekyll-based  listings page for an airbnb host and optionally deploys it on github through github pages
 
 ## Usage
 ```
