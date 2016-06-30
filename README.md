@@ -2,7 +2,9 @@
 
 its like github pages for airbnb hosts
 
-`hostpages` generates a jekyll-based website for an airbnb host displaying all of their listings and optionally deploys it on github through github pages
+`hostpages` generates a jekyll-based website for an airbnb host displaying all of their listings and optionally deploys it on github through github pages.
+
+[See Example](https://arsenovic.github.io/41657617/)
 
 ## Usage
 ```
